@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Lab8</title>
+    <style>
+        .side-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            min-width: 300px;
+            transform: translate(-300px, 0px);
+            z-index: 20;
+            background-color: rgb(212, 212, 212);
+        }
+
+        .side-bar.active {
+            transform: translate(0px, 0px);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, .5);
+            z-index: 10;
+            visibility: hidden;
+            opacity: 0;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Lab8</h1>
+        <span style="font-size:30px" onclick="openSideBar()">button</span>
+    </div>
+    <div class="overlay overlay"></div>
+    <div class="side-bar bar"></div>
+
+    <script>
+
+        var $sideBar = document.querySelector('.bar');
+        var $overlay = document.querySelector('.overlay');
+
+        const BAR_WIDTH = $sideBar.clientWidth;
+        var recentX = -BAR_WIDTH;
+
+        var isMoving = false;
+        var moveDistance = -BAR_WIDTH;
+
+        var mouseDownX = 0;
+
+        function startMoving(e) {
+            isMoving = true;
+            mouseDownX = e.clientX;
+        }
+
+        function move(e) {
+            moveDistance = Math.max(Math.min(e.clientX - mouseDownX + recentX, 0), -BAR_WIDTH);
+            $sideBar.style.cssText = 'transform: translate(' + moveDistance + 'px, 0px)';
+
+            if (moveDistance > -BAR_WIDTH) {
+                var opacity = Math.min((moveDistance + BAR_WIDTH) / BAR_WIDTH, 1);
+                $overlay.style.cssText = 'visibility: visible; opacity:' + opacity + '';
+            }
+            else {
+                $overlay.style.cssText = 'visibility: hidden';
+            }
+        }
+
+        function stopMoving() {
+            isMoving = false;
+            if (moveDistance + BAR_WIDTH > BAR_WIDTH / 2) {
+                openSideBar();
+            }
+            else {
+                closeSideBar();
+            }
+        }
+
+        function openSideBar() {
+            $sideBar.style.cssText = 'transition: transform .15s linear';
+            $overlay.style.cssText = 'transition: opacity .1s linear';
+            $sideBar.classList.add('active');
+            $overlay.classList.add('active');
+
+            moveDistance = 0;
+            recentX = moveDistance;
+        }
+
+        function closeSideBar() {
+            $sideBar.style.cssText = 'transition: transform 0.15s linear';
+            $overlay.style.cssText = 'transition: opacity .15s linear, visibility .2s linear';
+            $sideBar.classList.remove('active');
+            $overlay.classList.remove('active');
+
+            moveDistance = -BAR_WIDTH;
+            recentX = moveDistance;
+        }
+
+        //down
+        $sideBar.addEventListener('mousedown', e => { startMoving(e); })
+        window.addEventListener('mousedown', e => {
+            if (e.clientX <= 150) {
+                startMoving(e);
+            }
+        })
+
+        //move
+        window.addEventListener('mousemove', e => { if (isMoving) { move(e); } })
+
+        //up
+        window.addEventListener('mouseup', stopMoving)
+        $overlay.addEventListener('mouseup', e => { if (!isMoving) closeSideBar() })
+
+    </script>
+</body>
+
+</html>
